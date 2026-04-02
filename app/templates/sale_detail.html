@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Detalhes da venda | StoreControl{% endblock %}
+{% block page_title %}Detalhes da venda #{{ sale.id }}{% endblock %}
+{% block page_subtitle %}Uma lupa na venda para você entender exatamente o que saiu e por quanto.{% endblock %}
+{% block header_actions %}
+<a class="btn secondary" href="/sales">Voltar para vendas</a>
+{% endblock %}
+{% block content %}
+<div class="grid sale-summary-grid">
+    <div class="card metric-card neutral">
+        <span class="metric-label">Cliente</span>
+        <strong>{{ sale.customer_name or 'Não informado' }}</strong>
+        <small>{{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+    </div>
+    <div class="card metric-card primary">
+        <span class="metric-label">Pagamento</span>
+        <strong>{{ sale.payment_method }}</strong>
+        <small>Forma escolhida no registro</small>
+    </div>
+    <div class="card metric-card income">
+        <span class="metric-label">Total da venda</span>
+        <strong>R$ {{ '%.2f'|format(sale.total_amount) }}</strong>
+        <small>Valor consolidado</small>
+    </div>
+</div>
+
+<section class="card card-elevated">
+    <div class="section-head">
+        <div>
+            <span class="panel-kicker">Itens</span>
+            <h3>Produtos vendidos</h3>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Subtotal</th></tr></thead>
+            <tbody>
+            {% for item in sale.items %}
+                <tr>
+                    <td>{{ item.product.name if item.product else '-' }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>R$ {{ '%.2f'|format(item.unit_price) }}</td>
+                    <td><strong>R$ {{ '%.2f'|format(item.subtotal) }}</strong></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if sale.notes %}
+        <div class="notes-box">
+            <span class="panel-kicker">Observações</span>
+            <p>{{ sale.notes }}</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

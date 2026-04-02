@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | StoreControl{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}O retrato rápido da loja. Bateu o olho, entendeu o que entrou, o que saiu e onde está o gargalo.{% endblock %}
+{% block header_actions %}
+<a class="btn secondary" href="/sales">Nova venda</a>
+<a class="btn primary" href="/products">Novo produto</a>
+{% endblock %}
+{% block content %}
+<section class="hero-strip card gradient-card">
+    <div>
+        <span class="panel-kicker">Visão executiva</span>
+        <h2>Sua operação em uma tela só</h2>
+        <p>Faturamento, despesas, estoque baixo e últimas movimentações.</p>
+    </div>
+    <div class="hero-mini-stats">
+        <div>
+            <span>Hoje</span>
+            <strong>R$ {{ '%.2f'|format(summary.sold_today) }}</strong>
+        </div>
+        <div>
+            <span>Saldo</span>
+            <strong>R$ {{ '%.2f'|format(summary.balance) }}</strong>
+        </div>
+    </div>
+</section>
+
+<div class="grid cards-grid metrics-grid">
+    <div class="card metric-card income">
+        <span class="metric-label">Vendido hoje</span>
+        <strong>R$ {{ '%.2f'|format(summary.sold_today) }}</strong>
+        <small>Movimento do dia</small>
+    </div>
+    <div class="card metric-card income-soft">
+        <span class="metric-label">Vendido no mês</span>
+        <strong>R$ {{ '%.2f'|format(summary.sold_month) }}</strong>
+        <small>Receita acumulada</small>
+    </div>
+    <div class="card metric-card expense">
+        <span class="metric-label">Gasto no mês</span>
+        <strong>R$ {{ '%.2f'|format(summary.expense_month) }}</strong>
+        <small>Saídas registradas</small>
+    </div>
+    <div class="card metric-card neutral">
+        <span class="metric-label">Saldo geral</span>
+        <strong>R$ {{ '%.2f'|format(summary.balance) }}</strong>
+        <small>Entradas menos saídas</small>
+    </div>
+    <div class="card metric-card primary">
+        <span class="metric-label">Lucro estimado do mês</span>
+        <strong>R$ {{ '%.2f'|format(summary.estimated_profit_month) }}</strong>
+        <small>Receita menos custo estimado</small>
+    </div>
+    <div class="card metric-card stock">
+        <span class="metric-label">Itens em estoque</span>
+        <strong>{{ summary.total_stock_items }}</strong>
+        <small>Total físico cadastrado</small>
+    </div>
+</div>
+
+<div class="grid two-col two-col-wide">
+    <section class="card card-elevated">
+        <div class="section-head">
+            <div>
+                <span class="panel-kicker">Radar</span>
+                <h3>Produtos com estoque baixo</h3>
+            </div>
+            <a class="btn small secondary" href="/stock">Ver estoque</a>
+        </div>
+        {% if summary.low_stock_products %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Produto</th><th>SKU</th><th>Estoque</th><th>Mínimo</th></tr></thead>
+                <tbody>
+                {% for product in summary.low_stock_products %}
+                    <tr>
+                        <td>
+                            <strong>{{ product.name }}</strong>
+                            <div class="table-subline">Categoria: {{ product.category or 'Sem categoria' }}</div>
+                        </td>
+                        <td>{{ product.sku }}</td>
+                        <td><span class="badge danger">{{ product.stock_quantity }}</span></td>
+                        <td>{{ product.minimum_stock }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state compact">
+                <div class="empty-icon">✓</div>
+                <div>
+                    <strong>Nenhum alerta no momento</strong>
+                    <p class="muted">Seu estoque está respirando sem sufoco por aqui.</p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="card card-elevated">
+        <div class="section-head">
+            <div>
+                <span class="panel-kicker">Movimento</span>
+                <h3>Últimas vendas</h3>
+            </div>
+            <a class="btn small secondary" href="/sales">Abrir vendas</a>
+        </div>
+        {% if summary.recent_sales %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Cliente</th><th>Pagamento</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for sale in summary.recent_sales %}
+                    <tr>
+                        <td>#{{ sale.id }}</td>
+                        <td>
+                            <strong>{{ sale.customer_name or 'Não informado' }}</strong>
+                            <div class="table-subline">{{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                        </td>
+                        <td>{{ sale.payment_method }}</td>
+                        <td><strong>R$ {{ '%.2f'|format(sale.total_amount) }}</strong></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state compact">
+                <div class="empty-icon">↗</div>
+                <div>
+                    <strong>Ainda não existem vendas registradas</strong>
+                    <p class="muted">Assim que você registrar as primeiras, elas aparecem aqui.</p>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<section class="card card-elevated">
+    <div class="section-head">
+        <div>
+            <span class="panel-kicker">Rastro</span>
+            <h3>Últimas movimentações de estoque</h3>
+        </div>
+        <a class="btn small secondary" href="/stock">Histórico completo</a>
+    </div>
+    {% if summary.recent_movements %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Qtd</th><th>Motivo</th></tr></thead>
+            <tbody>
+            {% for movement in summary.recent_movements %}
+                <tr>
+                    <td>{{ movement.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ movement.product.name if movement.product else '-' }}</td>
+                    <td>
+                        {% if movement.movement_type == 'sale' %}
+                            <span class="badge info">Venda</span>
+                        {% elif movement.movement_type == 'entry' %}
+                            <span class="badge success">Entrada</span>
+                        {% else %}
+                            <span class="badge warning">Ajuste</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ movement.quantity }}</td>
+                    <td>{{ movement.reason or '-' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="empty-state compact">
+            <div class="empty-icon">▣</div>
+            <div>
+                <strong>Nenhuma movimentação registrada ainda</strong>
+                <p class="muted">Entradas, ajustes e vendas vão aparecer aqui.</p>
+            </div>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

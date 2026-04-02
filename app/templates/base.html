@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}StoreControl{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2716%27 fill=%27%230f172a%27/%3E%3Cpath d=%27M18 20h28v6H18zm0 12h20v6H18zm0 12h28v6H18z%27 fill=%27%2360a5fa%27/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Abrir menu">☰</button>
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div>
+                <div class="brand-wrap">
+                    <div class="brand-mark">NC</div>
+                    <div>
+                        <div class="brand">NeonControl</div>
+                        <div class="muted brand-subtitle">Estoque e caixa em sintonia</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-panel glass-panel">
+                <span class="panel-kicker">Painel central</span>
+                <strong>Controle de navegação.</strong>
+                <p>Cadastre, venda, baixe estoque e acompanhe o dinheiro.</p>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="/">
+                <span class="nav-icon">⌂</span><span>Dashboard</span>
+            </a>
+            <a class="nav-link {% if active_page == 'products' %}active{% endif %}" href="/products">
+                <span class="nav-icon">◫</span><span>Produtos</span>
+            </a>
+            <a class="nav-link {% if active_page == 'sales' %}active{% endif %}" href="/sales">
+                <span class="nav-icon">↗</span><span>Vendas</span>
+            </a>
+            <a class="nav-link {% if active_page == 'stock' %}active{% endif %}" href="/stock">
+                <span class="nav-icon">▣</span><span>Estoque</span>
+            </a>
+            <a class="nav-link {% if active_page == 'finance' %}active{% endif %}" href="/finance">
+                <span class="nav-icon">$</span><span>Financeiro</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer glass-panel">
+            <span class="panel-kicker">Controle de Loja</span>
+            <strong>Toda Delicatta</strong>
+            <p>Controle de estoque e financeiro.</p>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="page-header glass-panel">
+            <div>
+                <div class="eyebrow">Controle de loja</div>
+                <h1>{% block page_title %}{% endblock %}</h1>
+                <p class="muted page-subtitle">{% block page_subtitle %}{% endblock %}</p>
+            </div>
+            <div class="header-actions">
+                {% block header_actions %}{% endblock %}
+            </div>
+        </header>
+
+        {% set success_msg = request.query_params.get('success') %}
+        {% set error_msg = error if error else request.query_params.get('error') %}
+
+        {% if success_msg %}
+            <div class="alert success"><span>✓</span><div>{{ success_msg.replace('+', ' ') }}</div></div>
+        {% endif %}
+        {% if error_msg %}
+            <div class="alert error"><span>!</span><div>{{ error_msg.replace('+', ' ') }}</div></div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Vendas | StoreControl{% endblock %}
+{% block page_title %}Vendas{% endblock %}
+{% block page_subtitle %}Registre vendas com fluxo limpo, sem tropeçar no estoque nem perder a trilha do dinheiro.{% endblock %}
+{% block content %}
+<div class="grid two-col sales-layout">
+    <section class="card card-elevated form-card">
+        <div class="section-head">
+            <div>
+                <span class="panel-kicker">Nova venda</span>
+                <h3>Registrar venda</h3>
+            </div>
+            <span class="pill-count">Baixa automática de estoque</span>
+        </div>
+
+        <form method="post" action="/sales" class="form-grid" id="sale-form">
+            <label>Cliente
+                <input type="text" name="customer_name" placeholder="Opcional">
+            </label>
+            <label>Forma de pagamento
+                <select name="payment_method" required>
+                    <option value="Pix">Pix</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Transferência">Transferência</option>
+                </select>
+            </label>
+            <label class="full-width">Observações<textarea name="notes" rows="3" placeholder="Opcional"></textarea></label>
+
+            <div class="section-head full-width inline-head">
+                <div>
+                    <span class="panel-kicker">Itens</span>
+                    <h4>Carrinho da venda</h4>
+                </div>
+                <button type="button" class="btn secondary" id="add-sale-item">Adicionar item</button>
+            </div>
+
+            <div id="sale-items" class="full-width">
+                <div class="sale-item-row">
+                    <div>
+                        <label>Produto
+                            <select name="product_id" required>
+                                <option value="">Selecione um produto</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}" data-price="{{ product.sale_price }}" data-stock="{{ product.stock_quantity }}">{{ product.name }} | SKU {{ product.sku }} | Estoque {{ product.stock_quantity }} | R$ {{ '%.2f'|format(product.sale_price) }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label>Quantidade
+                            <input type="number" name="quantity" min="1" value="1" required>
+                        </label>
+                    </div>
+                    <div class="item-subtotal-box">
+                        <span>Subtotal</span>
+                        <strong class="item-subtotal">R$ 0,00</strong>
+                        <button type="button" class="btn danger remove-item">Remover</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sale-total-panel full-width">
+                <div>
+                    <span>Total estimado</span>
+                    <strong id="sale-total">R$ 0,00</strong>
+                </div>
+                <button type="submit" class="btn primary">Registrar venda</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card card-elevated">
+        <div class="section-head">
+            <div>
+                <span class="panel-kicker">Histórico</span>
+                <h3>Últimas vendas</h3>
+            </div>
+            <span class="pill-count">{{ sales|length }} venda(s)</span>
+        </div>
+        {% if sales %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Data</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th></th></tr></thead>
+                <tbody>
+                {% for sale in sales %}
+                    <tr>
+                        <td>#{{ sale.id }}</td>
+                        <td>{{ sale.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ sale.customer_name or 'Não informado' }}</td>
+                        <td>{{ sale.payment_method }}</td>
+                        <td><strong>R$ {{ '%.2f'|format(sale.total_amount) }}</strong></td>
+                        <td><a class="btn small secondary" href="/sales/{{ sale.id }}">Detalhes</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">↗</div>
+                <strong>Nenhuma venda registrada</strong>
+                <p class="muted">Quando você concluir a primeira, o histórico aparece aqui com todo o rastro.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/sales.js"></script>
+{% endblock %}

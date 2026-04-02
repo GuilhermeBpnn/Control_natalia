@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Financeiro | StoreControl{% endblock %}
+{% block page_title %}Financeiro{% endblock %}
+{% block page_subtitle %}Entradas, saídas e saldo organizados sem teatro contábil.{% endblock %}
+{% block header_actions %}
+<div class="row gap-sm wrap-mobile">
+    <a class="btn small secondary" href="/finance">Todos</a>
+    <a class="btn small secondary" href="/finance?entry_type=income">Entradas</a>
+    <a class="btn small secondary" href="/finance?entry_type=expense">Saídas</a>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid cards-grid metrics-grid finance-metrics">
+    <div class="card metric-card income">
+        <span class="metric-label">Total de entradas</span>
+        <strong>R$ {{ '%.2f'|format(totals.income) }}</strong>
+        <small>Recebimentos registrados</small>
+    </div>
+    <div class="card metric-card expense">
+        <span class="metric-label">Total de saídas</span>
+        <strong>R$ {{ '%.2f'|format(totals.expense) }}</strong>
+        <small>Custos e despesas</small>
+    </div>
+    <div class="card metric-card neutral">
+        <span class="metric-label">Saldo atual</span>
+        <strong>R$ {{ '%.2f'|format(totals.balance) }}</strong>
+        <small>Resultado acumulado</small>
+    </div>
+</div>
+
+<div class="grid two-col finance-layout">
+    <section class="card card-elevated form-card sticky-card">
+        <div class="section-head">
+            <div>
+                <span class="panel-kicker">Novo lançamento</span>
+                <h3>Registrar entrada ou saída</h3>
+            </div>
+        </div>
+        <form method="post" action="/finance" class="form-grid">
+            <label>Tipo
+                <select name="type" required>
+                    <option value="income">Entrada</option>
+                    <option value="expense">Saída</option>
+                </select>
+            </label>
+            <label>Categoria<input type="text" name="category" placeholder="Ex: aluguel, venda, embalagem" required></label>
+            <label>Valor<input type="number" step="0.01" min="0.01" name="amount" required></label>
+            <label>Origem<input type="text" name="origin" placeholder="Ex: Caixa, Banco, Loja Física"></label>
+            <label class="full-width">Descrição<textarea name="description" rows="4" placeholder="Detalhe o lançamento, quando fizer sentido"></textarea></label>
+            <div class="actions full-width"><button class="btn primary" type="submit">Salvar lançamento</button></div>
+        </form>
+    </section>
+
+    <section class="card card-elevated">
+        <div class="section-head">
+            <div>
+                <span class="panel-kicker">Movimentações</span>
+                <h3>Lançamentos financeiros</h3>
+            </div>
+            {% if entry_type %}
+                <span class="pill-count">Filtro: {{ 'Entradas' if entry_type == 'income' else 'Saídas' }}</span>
+            {% else %}
+                <span class="pill-count">Todos</span>
+            {% endif %}
+        </div>
+        {% if entries %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th>Valor</th></tr></thead>
+                <tbody>
+                {% for entry in entries %}
+                    <tr>
+                        <td>{{ entry.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            {% if entry.type == 'income' %}
+                                <span class="badge success">Entrada</span>
+                            {% else %}
+                                <span class="badge danger">Saída</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ entry.category }}</strong>
+                            <div class="table-subline">{{ entry.origin or 'Origem não informada' }}</div>
+                        </td>
+                        <td>{{ entry.description or '-' }}</td>
+                        <td><strong>R$ {{ '%.2f'|format(entry.amount) }}</strong></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">$</div>
+                <strong>Nenhum lançamento registrado</strong>
+                <p class="muted">Assim que você lançar entradas e saídas, o caixa começa a contar a história certa.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
